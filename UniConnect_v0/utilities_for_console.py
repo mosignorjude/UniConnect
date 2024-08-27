@@ -4,9 +4,9 @@
 These are functions that power the console class under the hood
 They perform the basic task in tasks in the console.
 """
-import datetime
-from models.class_module import (BaseModel, User,
-                                 Lecturer, Student)
+# import datetime
+from class_module import (
+    BaseModel, User, Lecturer, Student, Course, Enrollment)
 
 
 def create_object(class_name):
@@ -25,6 +25,10 @@ def create_object(class_name):
             return Student()
         elif class_name == "Lecturer":
             return Lecturer()
+        elif class_name == "Course":
+            return Course()
+        elif class_name == "Enrollment":
+            return Enrollment()
     else:
         return None
 

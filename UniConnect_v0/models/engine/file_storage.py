@@ -14,9 +14,8 @@ class FileStorage():
     __file_path: str = "file.json"
     __objects: dict = {}
     models = (
-        "BaseModel", "User", "Place",
-        "Review", "State", "City",
-        "Amenity"
+        "BaseModel", "User", "Enrollment", "Student", "Course",
+        "Lecturer"
     )
 
     def __init__(self):
@@ -50,8 +49,8 @@ class FileStorage():
 
         if FileStorage.__file_path:
             try:
-                from models.class_module import (
-                    BaseModel, User, Student, Lecturer)
+                from class_module import (BaseModel, User, Student, Lecturer,
+                                          Course, Enrollment)
                 with open(FileStorage.__file_path, 'r') as file:
                     json_data = file.read()
                 dict_from_json = json.loads(json_data)

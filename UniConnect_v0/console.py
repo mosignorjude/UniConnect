@@ -23,7 +23,7 @@ class HBNBCommand(cmd.Cmd):
     All in interaction with the system are done via this class.
     """
 
-    prompt = "(hbnb) "
+    prompt = "(UniConnect) "
 
     def do_quit(self, line_arg):
         """ Quits command to exit the program\n """
