@@ -1,28 +1,23 @@
 #!/usr/bin/python3
 """
-Defines the student class.
+Defines the courses class.
 Inherits from BaseModel class.
 """
 from models.base_model import BaseModel
 
 
-class Student(BaseModel):
+class Course(BaseModel):
     """
-    Represents a student in Uniconnect
+    Represents a course in Uniconnect
     """
-    user_id = ""
-    reg_no = 0
-    program = ""
-    faculty = ""
-    department = ""
-    level = 0
-    cgpa = 0.0
-    enrollment_date = ""
-    courses = []  # list of courses id
+    course_code = ""
+    course_name = ""
+    description = ""
+    lecturers = []  # List of Lecturer IDs
 
     def __init__(self, *args, **kwargs):
         """
-        student class constructor.
+        course class constructor.
         Arguments:
             args: Non keyworded arguments.
             kwargs: keyworded arguments.

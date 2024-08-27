@@ -1,28 +1,24 @@
 #!/usr/bin/python3
 """
-Defines the student class.
+Defines the enrollment class.
 Inherits from BaseModel class.
 """
 from models.base_model import BaseModel
+import datetime
 
 
-class Student(BaseModel):
+class Enrollment(BaseModel):
     """
-    Represents a student in Uniconnect
+    Represents an enrollment in Uniconnect
     """
-    user_id = ""
-    reg_no = 0
-    program = ""
-    faculty = ""
-    department = ""
-    level = 0
-    cgpa = 0.0
-    enrollment_date = ""
-    courses = []  # list of courses id
+
+    reg_no = 0  # ID of the Student
+    course_id = ""   # ID of the Course
+    enrollment_date = datetime.datetime.now()
 
     def __init__(self, *args, **kwargs):
         """
-        student class constructor.
+        enrollment class constructor.
         Arguments:
             args: Non keyworded arguments.
             kwargs: keyworded arguments.

@@ -5,6 +5,7 @@ Other classes inherit from this class
 """
 import uuid
 import datetime
+from models import storage
 
 
 class BaseModel():
@@ -30,7 +31,7 @@ class BaseModel():
             self.id = str(uuid.uuid4())
             self.created_at = datetime.datetime.now()
             self.updated_at = datetime.datetime.now()
-            # storage.new(self)
+            storage.new(self)
 
     def __str__(self):
         """ Returns printable representation of the model"""
@@ -41,7 +42,7 @@ class BaseModel():
         with current date and time
         """
         self.updated_at = datetime.datetime.now()
-        # storage.save()
+        storage.save()
 
     def to_dict(self):
         """ Returns a dictionary containing all key/value of __dict__

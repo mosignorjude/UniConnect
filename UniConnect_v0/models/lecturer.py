@@ -6,7 +6,7 @@ Inherits from BaseModel class.
 from models.base_model import BaseModel
 
 
-class Student(BaseModel):
+class Lecturer(BaseModel):
     """
     Represents a lecturer in Uniconnect
     """
