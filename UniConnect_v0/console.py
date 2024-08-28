@@ -5,21 +5,19 @@ which will serve as basis of the entire project
 """
 import cmd
 import sys
-import re
+import json
 from models.engine.file_storage import FileStorage
 from utilities_for_console import *
 from models import storage
 
 # Global variable of existing classes.
 classes = storage.models
-# Global variable of regex pattern
-pattern = r"^[Aa-Zz]\w*\.\((\w|-)*\)"
 
 
-class HBNBCommand(cmd.Cmd):
+class UniConnectCommand(cmd.Cmd):
     """
     The console - A simple command interpreter that manages objects
-    for the Airbnb project.
+    for the UniConnect project.
     All in interaction with the system are done via this class.
     """
 
@@ -186,6 +184,7 @@ class HBNBCommand(cmd.Cmd):
             print("** class doesn't exist **")
             return
         if check_object(args, all_objects) is False:
+            print(args)
             print("** no instance found **")
             return
         if len(args) == 1:
@@ -277,18 +276,32 @@ class HBNBCommand(cmd.Cmd):
             method = args[1]
             if obj_class in classes:
                 obj_attr = extract_attr(method)
-                if obj_attr.startswith('"'):
-                    obj_attr = obj_attr.replace('"', '')
+                # print(obj_attr)
+                # if obj_attr.startswith('"'):
+                # obj_attr = obj_attr.replace('"', '')
                 if method.startswith("show(") and method[-1:] == ")":
                     self.do_show(f"{obj_class} {obj_attr}")
                 elif method.startswith("destroy(") and method[-1:] == ")":
                     self.do_destroy(f"{obj_class} {obj_attr}")
                 elif method.startswith("update(") and method[-1:] == ")":
-                    attr = obj_attr.split(", ")
+                    attr = custom_split(obj_attr)
                     id = attr[0]
+                    if id.startswith('"'):
+                        id = attr[0].replace('"', '')
                     attribute = attr[1]
-                    value = attr[2]
-                    self.do_update(f"{obj_class} {id} {attribute} {value}")
+                    attr_dict = {}
+                    if attribute.startswith("{"):
+                        attribute = attr[1].replace("'", '"')
+                        dict_str = f"{attribute}"
+                        attr_dict = json.loads(dict_str)
+                    elif attribute.startswith('"'):
+                        attr_name = attribute.replace('"', '')
+                        value = attr[2]
+                        if value.startswith('"'):
+                            value = attr[2].replace('"', '')
+                        attr_dict[attr_name] = value
+                    for attribute, value in attr_dict.items():
+                        self.do_update(f"{obj_class} {id} {attribute} {value}")
                 else:
                     print("** Invalid syntax **")
             else:
@@ -299,7 +312,7 @@ class HBNBCommand(cmd.Cmd):
 
 def run_interactive_mode():
     """ Runs the console in interactive mode """
-    HBNBCommand().cmdloop()
+    UniConnectCommand().cmdloop()
 
 
 def run_non_interactive_mode():
@@ -307,13 +320,13 @@ def run_non_interactive_mode():
     commands = sys.argv[1:]
     for command in commands:
         try:
-            HBNBCommand().onecmd(command)
+            UniConnectCommand().onecmd(command)
 
         except Exception as e:
             print("Error executing {} : {}".format(command, e))
 
 
 if __name__ == '__main__':
-    HBNBCommand().cmdloop()
+    UniConnectCommand().cmdloop()
 
 # -----------------------------------------------------------------------------

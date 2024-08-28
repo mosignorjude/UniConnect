@@ -70,14 +70,17 @@ def check_object(args, all_objects):
 def update_obj_attr(args, all_objects, storage):
     """ Update the attribute of an object
     Args:
-        args (str): List of strings of arguments
-        all_objects (FileStorage): List of all existing objects (dictionary)
-        storage (FileStorage): Updates and stores the changes.
+        args (list): List of strings of arguments
+        all_objects (dict): Dictionary of all existing objects
+        storage (FileStorage): Storage object that updates
+                                and stores the changes.
     Return:
-        returns 0 or 1
+        int: Returns 0 if the update is successful, 1 otherwise
     """
     if args and len(args) == 4:
         class_name = args[0]
+        if class_name.startswith('"'):
+            class_name = args[0].replace('"', '')
         obj_id = args[1]
         if obj_id.startswith('"'):
             obj_id = args[1].replace('"', '')
@@ -99,6 +102,7 @@ def update_obj_attr(args, all_objects, storage):
             return 0
         else:
             return 1
+    return 1
 
 
 def extract_attr(string):
@@ -110,3 +114,29 @@ def extract_attr(string):
     if start_index != -1 and end_index != -1:
         content = string[start_index:end_index]
     return content
+
+
+def custom_split(arg):
+    """
+    Splits the argument string into a list, stopping at '{'.
+    Uses both space and comma as delimiters.
+    """
+    result = []
+    current = []
+    in_dict = False
+
+    for char in arg:
+        if char == '{':
+            in_dict = True
+
+        if (char == ' ' or char == ',') and not in_dict:
+            if current:
+                result.append(''.join(current))
+                current = []
+        else:
+            current.append(char)
+
+    if current:
+        result.append(''.join(current))
+
+    return result
