@@ -38,7 +38,7 @@ with engine.connect() as connection:
         connection.execute(text(f"DROP TABLE IF EXISTS `{table}`;"))
     connection.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
 
-# Create all tables
+# Create all tables (must be also commented out in production)
 Base.metadata.create_all(engine, checkfirst=True)
 
 # Set up the session factory and scoped session
