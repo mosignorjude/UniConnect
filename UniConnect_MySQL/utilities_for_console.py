@@ -7,7 +7,7 @@ They perform the basic task in tasks in the console.
 # import datetime
 from class_module import (
     BaseModel, User, Lecturer, Student, Course, Enrollment)
-
+import re
 
 def create_object(class_name):
     """ creates an object of class_name
@@ -145,29 +145,13 @@ def custom_split(arg):
 
 
 def parse_param(line_arg):
-    args = line_arg.split()
-    param_dict = {}
-    for param in args:
-        if '=' not in param:
-            continue  # skip if there's no '=' in parameter
-        name, value = param.split('=', 1)
-
-        if value.startswith('"') and value.endswith('"'):
-            value = value[1:-1]  # Remove the surrounding quotes
-            value = value.replace('\\"', '"')  # Replace escaped quotes
-            value = value.replace('_', ' ')  # Replace underscores with spaces
-        elif '.' in value and value.replace('.', '', 1).isdigit():
-            # Float case: check if it is a valid float
-            try:
-                value = float(value)
-            except ValueError:
-                continue  # Skip if not a valid float
-        elif value.isdigit():
-            # Integer case
-            value = int(value)
-        else:
-            continue  # Skip if it doesn't match any valid pattern
-
-        param_dict[name] = value
-
-    return param_dict
+    """
+    Parses the parameters from the command line input.
+    """
+    params = {}
+    # Use regex to match key-value pairs
+    matches = re.findall(r"(\w+)='([^']*)'", line_arg)
+    for match in matches:
+        key, value = match
+        params[key] = value
+    return params

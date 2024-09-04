@@ -3,23 +3,15 @@
 Defines the courses class.
 Inherits from BaseModel class.
 """
+from sqlalchemy import Column, String, Text, Integer, DateTime
 from models.base_model import BaseModel
 
-
 class Course(BaseModel):
-    """
-    Represents a course in Uniconnect
-    """
-    course_code = ""
-    course_name = ""
-    description = ""
-    lecturers = []  # List of Lecturer IDs
-
-    def __init__(self, *args, **kwargs):
-        """
-        course class constructor.
-        Arguments:
-            args: Non keyworded arguments.
-            kwargs: keyworded arguments.
-        """
-        super().__init__(*args, **kwargs)
+    __tablename__ = 'course'
+    course_name = Column(String(100), nullable=False)
+    course_code = Column(String(20), unique=True, nullable=False)
+    description = Column(Text)
+    lecturers = Column(Text)
+    course_credits = Column(Integer, nullable=False)
+    schedule = Column(DateTime)
+    syllabus = Column(Text)

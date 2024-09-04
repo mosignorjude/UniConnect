@@ -6,13 +6,22 @@ which will serve as basis of the entire project
 import cmd
 import sys
 import json
-from models.engine.file_storage import FileStorage
+from models import storage, User, Student, Lecturer, Course, Enrollment, Grade, LectureNotes, Appointment, Payment, CourseLecturers
 from utilities_for_console import *
-from models import storage
 
 # Global variable of existing classes.
-classes = storage.models
-
+classes = {
+    'User': User,
+    'Student': Student,
+    'Lecturer': Lecturer,
+    'Course': Course,
+    'Enrollment': Enrollment,
+    'Grade': Grade,
+    'LectureNotes': LectureNotes,
+    'Appointment': Appointment,
+    'Payment': Payment,
+    'CourseLecturers': CourseLecturers
+}
 
 class UniConnectCommand(cmd.Cmd):
     """
@@ -26,7 +35,7 @@ class UniConnectCommand(cmd.Cmd):
     def do_quit(self, line_arg):
         """ Quits command to exit the program\n """
         return True
-
+    
     def do_EOF(self, line_arg):
         """Exit command that quits the program\n """
         return True
@@ -38,8 +47,8 @@ class UniConnectCommand(cmd.Cmd):
 
     def do_create(self, line_arg):
         """
-        Creates a new instance of BaseModel, saves it (to the JSON file)
-        and prints the id .
+        Creates a new instance of BaseModel, saves it (to the database)
+        and prints the id.
         Usage:
             $ create BaseModel
         """
@@ -47,12 +56,25 @@ class UniConnectCommand(cmd.Cmd):
             args = line_arg.split()
             if len(args) >= 1:
                 class_name = args[0]
-                new_model = create_object(class_name)
-                if new_model:
+                if class_name in classes:
+                    new_model = classes[class_name]()
                     attribute = parse_param(line_arg)
+                    required_attributes = ['first_name', 'last_name', 'email', 'password', 'user_type']
+                    
+                    # Add required attributes for Lecturer
+                    if class_name == 'Lecturer':
+                        required_attributes.extend(['department', 'program', 'contact', 'rank'])
+
+                    missing_attributes = [attr for attr in required_attributes if attr not in attribute]
+
+                    if missing_attributes:
+                        print(f"** Missing required attributes: {', '.join(missing_attributes)} **")
+                        return
+
                     for name, value in attribute.items():
                         setattr(new_model, name, value)
-                    new_model.save()
+                    storage.session.add(new_model)
+                    storage.session.commit()
                     print("{}".format(new_model.id))
                 else:
                     print("** class doesn't exist **")
@@ -70,28 +92,25 @@ class UniConnectCommand(cmd.Cmd):
         Prints the string representation of an instance based on
         class name and id.
         Usage:
-             $ show BaseModel 1234-1234-1234
+            $ show BaseModel 1234-1234-1234
         """
         if not line_arg:
             print("** class name missing **")
             return
 
-        all_objects = storage.all()
         args = line_arg.split()
         if args[0] not in classes:
             print("** class doesn't exist **")
             return
         if len(args) < 2:
-            class_name = args[0]
             print("** instance id missing **")
             return
         elif len(args) == 2:
             class_name = args[0]
             obj_id = args[1]
-            class_key = f"{class_name}.{obj_id}"
-
-            if class_key in all_objects:
-                print(all_objects[class_key])
+            obj = storage.session.get(classes[class_name], obj_id)
+            if obj:
+                print(obj)
             else:
                 print("** no instance found **")
                 return
@@ -100,6 +119,7 @@ class UniConnectCommand(cmd.Cmd):
             return
 
     # -------------------------------------------------------------------------
+
 
     def do_destroy(self, line_arg):
         """
@@ -111,64 +131,26 @@ class UniConnectCommand(cmd.Cmd):
         if not line_arg:
             print("** class name missing **")
             return
-        all_objects = storage.all()
         args = line_arg.split()
         if args[0] not in classes:
             print("** class doesn't exist **")
             return
-        if check_object(args, all_objects) is False:
-            print("** no instance found **")
-            return
-        if len(args) == 1:
+        if len(args) < 2:
             print("** instance id missing **")
             return
         elif len(args) == 2:
             class_name = args[0]
             obj_id = args[1]
-            class_key = f"{class_name}.{obj_id}"
-            if class_name in classes:
-                if class_key in all_objects.keys():
-                    del all_objects[class_key]
-                    FileStorage.__objects = all_objects
-                    storage.save()
-                else:
-                    print("** no instance found **")
-                    return
+            obj = storage.session.get(classes[class_name], obj_id)
+            if obj:
+                storage.session.delete(obj)
+                storage.session.commit()
             else:
-                print("** class doesn't exist **")
+                print("** no instance found **")
+                return
         else:
             print("** Too many argument for destroy **")
             return
-
-    # -------------------------------------------------------------------------
-
-    def do_all(self, line_arg):
-        """
-        Prints all string representation of all instances
-        based or not on the class name
-        Usage:
-            $ all BaseModel
-            or
-            $ all
-        """
-        all_objects = storage.all()
-        if line_arg:
-            args = line_arg.split()
-            if len(args) == 1:
-                class_name = args[0]
-                if class_name not in classes:
-                    print("** class doesn't exist **")
-                    return
-                for obj_key, obj in all_objects.items():
-                    if obj_key.startswith(class_name):
-                        print(obj)
-            else:
-                print("** Too many argument for all **")
-                return
-
-        else:
-            for key in all_objects:
-                print(all_objects[key])
 
     # -------------------------------------------------------------------------
 
@@ -182,29 +164,60 @@ class UniConnectCommand(cmd.Cmd):
         if not line_arg:
             print("** class name missing **")
             return
-        all_objects = storage.all()
         args = line_arg.split()
         if args[0] not in classes:
             print("** class doesn't exist **")
             return
-        if check_object(args, all_objects) is False:
-            print(args)
-            print("** no instance found **")
-            return
-        if len(args) == 1:
+        if len(args) < 2:
             print("** instance id missing **")
             return
-        elif len(args) == 2:
+        elif len(args) < 3:
             print("** attribute name missing **")
             return
-        elif len(args) == 3:
+        elif len(args) < 4:
             print("** value missing **")
             return
-        elif len(args) == 4:
-            update_obj_attr(args, all_objects, storage)
         else:
-            print("** Too many argument for update **")
-            print(args)
+            class_name = args[0]
+            obj_id = args[1]
+            attribute_name = args[2]
+            attribute_value = args[3]
+            obj = storage.session.get(classes[class_name], obj_id)
+            if obj:
+                setattr(obj, attribute_name, attribute_value)
+                storage.session.commit()
+            else:
+                print("** no instance found **")
+                return
+    # -------------------------------------------------------------------------
+
+    def do_all(self, line_arg):
+        """
+        Prints all string representation of all instances
+        based or not on the class name
+        Usage:
+            $ all BaseModel
+            or
+            $ all
+        """
+        if line_arg:
+            args = line_arg.split()
+            if len(args) == 1:
+                class_name = args[0]
+                if class_name not in classes:
+                    print("** class doesn't exist **")
+                    return
+                objs = storage.session.query(classes[class_name]).all()
+                for obj in objs:
+                    print(obj)
+            else:
+                print("** Too many argument for all **")
+                return
+        else:
+            for class_name in classes:
+                objs = storage.session.query(classes[class_name]).all()
+                for obj in objs:
+                    print(obj)
 
     # -------------------------------------------------------------------------
 
@@ -214,7 +227,6 @@ class UniConnectCommand(cmd.Cmd):
             args = arg.split('.')
             if ('.' in arg and '(' in arg and args[0] in classes
                     and args[1][-1:] == ")"):
-                # if args[0] in classes and re.match(pattern, arg[1]):
                 return self.handle_unregistered_command(arg)
 
         return cmd.Cmd.default(self, arg)
@@ -262,10 +274,7 @@ class UniConnectCommand(cmd.Cmd):
             method = args[1]
             if obj_class in classes:
                 if method == "count()":
-                    all_object = storage.all()
-                    for key, obj in all_object.items():
-                        if key.startswith(obj_class):
-                            count += 1
+                    count = storage.session.query(classes[obj_class]).count()
                     print(count)
             else:
                 print("** class doesn't exist **")
@@ -280,9 +289,6 @@ class UniConnectCommand(cmd.Cmd):
             method = args[1]
             if obj_class in classes:
                 obj_attr = extract_attr(method)
-                # print(obj_attr)
-                # if obj_attr.startswith('"'):
-                # obj_attr = obj_attr.replace('"', '')
                 if method.startswith("show(") and method[-1:] == ")":
                     self.do_show(f"{obj_class} {obj_attr}")
                 elif method.startswith("destroy(") and method[-1:] == ")":
@@ -311,7 +317,7 @@ class UniConnectCommand(cmd.Cmd):
             else:
                 print("** class doesn't exist **")
         else:
-            print("** me - Too many argument **")
+            print("** Too many argument **")
 
 
 def run_interactive_mode():
@@ -327,10 +333,8 @@ def run_non_interactive_mode():
             UniConnectCommand().onecmd(command)
 
         except Exception as e:
-            print("Error executing {} : {}".format(command, e))
+            print(" executing {} : {}".format(command, e))
 
 
 if __name__ == '__main__':
     UniConnectCommand().cmdloop()
-
-# -----------------------------------------------------------------------------

@@ -1,26 +1,18 @@
 #!/usr/bin/python3
-"""
-Defines the enrollment class.
-Inherits from BaseModel class.
-"""
-from models.base_model import BaseModel
-import datetime
 
+from sqlalchemy import Column, String, DateTime, ForeignKey
+from models.base_model import BaseModel
 
 class Enrollment(BaseModel):
     """
-    Represents an enrollment in Uniconnect
+    Represents an enrollment of a student in a course.
+
+    Attributes:
+        reg_no (str): The registration number of the student.
+        course_id (str): The ID of the course.
+        enrollment_date (DateTime): The date of enrollment.
     """
-
-    reg_no = 0  # ID of the Student
-    course_id = ""   # ID of the Course
-    enrollment_date = datetime.datetime.now()
-
-    def __init__(self, *args, **kwargs):
-        """
-        enrollment class constructor.
-        Arguments:
-            args: Non keyworded arguments.
-            kwargs: keyworded arguments.
-        """
-        super().__init__(*args, **kwargs)
+    __tablename__ = 'enrollment'
+    reg_no = Column(String(20), ForeignKey('student.reg_no'))
+    course_id = Column(String(36), ForeignKey('course.id'))
+    enrollment_date = Column(DateTime)
