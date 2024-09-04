@@ -1,8 +1,5 @@
 #!/usr/bin/python3
-"""
-This file defines the console class
-which will serve as basis of the entire project
-"""
+"""Command interpreter for UniConnect project"""
 import cmd
 import sys
 import json
@@ -15,11 +12,7 @@ classes = storage.models
 
 
 class UniConnectCommand(cmd.Cmd):
-    """
-    The console - A simple command interpreter that manages objects
-    for the UniConnect project.
-    All in interaction with the system are done via this class.
-    """
+    """ UniConnect console class """
 
     prompt = "(UniConnect) "
 
